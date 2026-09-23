@@ -1,19 +1,5 @@
 "use client";
-
-import { useState } from "react";
-import { getSupabase } from "../../lib/supabase";
-
-export default function Setup() {
-  const [name,setName]=useState("");
-  const [status,setStatus]=useState("");
-  async function createBusiness(e){
-    e.preventDefault();
-    const supabase=getSupabase();
-    if(!supabase){setStatus("Add the Supabase environment variables first.");return;}
-    const {data:{user}}=await supabase.auth.getUser();
-    if(!user){setStatus("Please sign in first.");return;}
-    const {error}=await supabase.from("businesses").insert({name,owner_id:user.id});
-    setStatus(error?error.message:"Business created. You can now use the dashboard.");
-  }
-  return <main className="setup"><div className="setupCard"><span className="eyebrow">BUSINESS OS</span><h1>Set up your business</h1><p>Start with the name you want to use inside Business OS.</p><form onSubmit={createBusiness}><input value={name} onChange={e=>setName(e.target.value)} placeholder="Business name" required/><button className="primary">Create business</button></form>{status&&<div className="notice">{status}</div>}</div></main>;
-}
+import {useState} from "react";
+import {getSupabase} from "../../lib/supabase";
+export default function Auth(){const[email,setEmail]=useState(""),[password,setPassword]=useState(""),[mode,setMode]=useState("signin"),[msg,setMsg]=useState("");
+async function submit(e){e.preventDefault();const s=getSupabase();if(!s){setMsg("Supabase configuration is missing.");return}const r=mode==="signin"?await s.auth.signInWithPassword({email,password}):await s.auth.signUp({email,password});if(r.error)setMsg(r.error.message);else setMsg(mode==="signin"?"Signed in.":"Account created. Check your email if confirmation is enabled.");if(!r.error&&mode==="signin")location.href="/"}return <main className="setup"><div className="setupCard"><span className="eyebrow">RAPSOMETTEDY</span><h1>{mode==="signin"?"Welcome back":"Create account"}</h1><p>Securely access your Business OS workspace.</p><form onSubmit={submit}><input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required/><input type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} minLength={6} required/><button className="primary">{mode==="signin"?"Sign in":"Create account"}</button></form>{msg&&<div className="notice">{msg}</div>}<button className="link" onClick={()=>setMode(mode==="signin"?"signup":"signin")}>{mode==="signin"?"Need an account? Sign up":"Already have an account? Sign in"}</button></div></main>}
